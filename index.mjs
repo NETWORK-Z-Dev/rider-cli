@@ -2,6 +2,7 @@ import { dSyncSign } from "@hackthedev/dsync-sign";
 import os from "node:os";
 import path from "path";
 import {initPackage} from "./api/package/init.mjs";
+import {publishPackage} from "./api/package/publish.mjs";
 
 let appDir = path.join(os.homedir(), "rider-cli")
 export const currentDir = process.cwd();
@@ -18,7 +19,7 @@ switch (command) {
         break;
 
     case "publish":
-        console.log("publish", args);
+        await publishPackage()
         break;
 
     default:

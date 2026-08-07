@@ -17,7 +17,7 @@ export function getPackageConfigPath(){
 }
 
 export function getPackageConfigObj(){
-    return JSON.parse(getPackageConfigPath());
+    return JSON.parse(fs.readFileSync(getPackageConfigPath(), "utf8"));
 }
 
 export async function uploadFile(filePath, {
@@ -26,83 +26,54 @@ export async function uploadFile(filePath, {
     params = {},
     type = "upload",
     host = null,
+    includeDir = false
 } = {}) {
+    const stat = fs.statSync(filePath);
     const chunkSize = 1024 * 256;
-    const stat = await fs.stat(filePath);
-
     const totalChunks = Math.ceil(stat.size / chunkSize);
     const fileId = crypto.randomUUID();
+    const file = fs.openSync(filePath, "r");
     const filename = path.basename(filePath);
+    let relativePath = path.relative(currentDir, filePath);
 
-    const file = await fs.open(filePath, "r");
+    for (let i = 0; i < totalChunks; i++) {
+        const size = Math.min(chunkSize, stat.size - i * chunkSize);
+        const buffer = Buffer.alloc(size);
 
-    let lastPercent = -1;
+        fs.readSync(file, buffer, 0, size, i * chunkSize);
 
-    try {
-        for (let i = 0; i < totalChunks; i++) {
-            const start = i * chunkSize;
-            const remaining = stat.size - start;
-            const currentChunkSize = Math.min(chunkSize, remaining);
+        const res = await fetch(`${host}/api/upload?${new URLSearchParams(params)}`, {
+            method: "POST",
+            headers: {
+                ...authObj,
+                "x-upload-type": type,
+                "x-file-name": encodeURIComponent(filename),
+                "x-file-path": includeDir === true ? encodeURIComponent(relativePath) : null,
+                "x-chunk-index": i,
+                "x-total-chunks": totalChunks,
+                "x-file-id": fileId
+            },
+            body: buffer
+        });
 
-            const buffer = Buffer.alloc(currentChunkSize);
+        const json = await res.json();
 
-            await file.read(buffer, 0, currentChunkSize, start);
-
-            const search = new URLSearchParams({
-                ...params
-            });
-
-            const url = `${host ?? ""}/upload${search.toString() ? `?${search}` : ""}`;
-
-            const res = await fetch(url, {
-                method: "POST",
-                headers: {
-                    ...authObj,
-                    "x-upload-type": type,
-                    "x-file-name": encodeURIComponent(filename),
-                    "x-chunk-index": String(i),
-                    "x-total-chunks": String(totalChunks),
-                    "x-file-id": fileId
-                },
-                body: buffer
-            });
-
-            let json;
-
-            try {
-                json = await res.json();
-            } catch {
-                return {
-                    ok: false,
-                    error: "invalid_server_response",
-                    status: res.status
-                };
-            }
-
-            if (!res.ok || !json.ok) {
-                return json;
-            }
-
-            const percent = Math.round(((i + 1) / totalChunks) * 100);
-
-            if (percent !== lastPercent) {
-                lastPercent = percent;
-
-                if (typeof onProgress === "function") {
-                    await onProgress(percent);
-                }
-            }
-
-            if (json.path) {
-                return json;
-            }
+        if (!json.ok) {
+            fs.closeSync(file);
+            return json;
         }
-    } finally {
-        await file.close();
+
+        if (onProgress) {
+            await onProgress(Math.round(((i + 1) / totalChunks) * 100));
+        }
+
+        if (json.path) {
+            fs.closeSync(file);
+            return json;
+        }
     }
 
-    return {
-        ok: false,
-        error: "unknown_upload_error"
-    };
+    fs.closeSync(file);
+
+    return { ok: true };
 }
