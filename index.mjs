@@ -9,7 +9,7 @@ let appDir = path.join(os.homedir(), "rider-cli")
 export const currentDir = process.cwd();
 let keyFile = path.join(os.homedir(), "cli-key.json")
 
-const signer = new dSyncSign(keyFile);
+export const signer = new dSyncSign(keyFile);
 await signer.ensureKeyPair()
 
 const [, , command, ...args] = process.argv;
@@ -26,6 +26,14 @@ switch (command) {
     case "install":
         await installPackage(args[0])
         break;
+
+    case "key":
+        console.log(await signer.getPublicKey())
+        break;
+    case "gid":
+        console.log(await signer.generateGid(await signer.getPublicKey()))
+        break;
+
 
     default:
         console.log(`Unkown command: ${command}`);

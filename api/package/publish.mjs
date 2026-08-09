@@ -1,8 +1,9 @@
-import {getPackageConfigObj, uploadFile} from "./helpers.mjs";
-import {currentDir} from "../../index.mjs";
+import {getPackageConfigObj, getPackageHost, uploadFile} from "./helpers.mjs";
+import {currentDir, signer} from "../../index.mjs";
 import fs from "node:fs";
 import Logger from "@hackthedev/terminal-logger";
 import path from "path";
+import {getSessionId} from "../../helpers.mjs";
 
 export async function publishPackage() {
 
@@ -32,6 +33,7 @@ export async function publishPackage() {
     // check the filtered array again
     if (!checkFileArrayLength(filteredFiles)) return;
 
+    Logger.info(`Uploading ${filteredFiles?.length ?? 0} files...`)
     for(let file of filteredFiles) {
         let fileName = file.name;
         let filePath = path.join(file.path, file.name);
@@ -39,20 +41,20 @@ export async function publishPackage() {
 
         if(!isFile) continue
 
-        Logger.info(`Uploading file ${fileName} - ${filePath}`)
         let result = await uploadFile(filePath, {
             host: "http://localhost:5000",
             authObj: {
-                "x-session-id": null,
-                "x-public-key": null,
+                "x-session-id": await getSessionId(getPackageHost()),
+                "x-public-key": encodeURIComponent(await signer.getPublicKey()),
             },
             params: {
                 type: "package",
                 name: packageConfig.name,
+                version: packageConfig.version,
+                isPublic: 1
             },
             includeDir: true,
         });
-
 
         let uploaded = result?.ok === true && result?.path
         if(!uploaded){
@@ -60,13 +62,6 @@ export async function publishPackage() {
             Logger.error(result?.error)
         }
     }
-
-    /*
-    authObj: {
-            "x-session-id": encodeURIComponent(await getSessionIdFromHost(await getHomeSocket().host)),
-            "x-public-key": encodeURIComponent(await Client().GetPublicKey()),
-        }
-     */
 
     function checkFileArrayLength(arr) {
         if (!arr) throw new Error("No array passed!")
