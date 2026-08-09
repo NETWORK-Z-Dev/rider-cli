@@ -15,6 +15,7 @@ export async function publishPackage() {
     let filteredFiles = [];
     let ignoreList = [
         "node_modules",
+        "rider_modules",
         ".git",
         ".idea",
     ]

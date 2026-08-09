@@ -20,6 +20,13 @@ export function getPackageConfigObj(){
     return JSON.parse(fs.readFileSync(getPackageConfigPath(), "utf8"));
 }
 
+export function setPackageConfigObj(packageObj){
+    if(!packageObj) throw new Error("Missing package object")
+    if(typeof packageObj !== "object") throw new Error("Supplied parameter is not a json object")
+
+    fs.writeFileSync(getPackageConfigPath(), JSON.stringify(packageObj, null, 4));
+}
+
 export function getPackageHost(){
     return "http://localhost:5000";
 }

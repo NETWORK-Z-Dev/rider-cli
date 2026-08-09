@@ -1,21 +1,21 @@
 {
-  "name": "rider-cli",
-  "version": "1.0.0",
-  "description": "",
-  "type": "commonjs",
-  "main": "index.mjs",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "dependencies": {
-    "@hackthedev/dsync-sign": "^1.0.15",
-    "@hackthedev/terminal-logger": "^1.0.1"
-  },
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  }
+    "name": "rider-cli",
+    "version": "1.0.7",
+    "description": "",
+    "type": "commonjs",
+    "main": "index.mjs",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "@hackthedev/dsync-sign": "^1.0.15",
+        "@hackthedev/terminal-logger": "^1.0.1"
+    },
+    "private": true,
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    }
 }

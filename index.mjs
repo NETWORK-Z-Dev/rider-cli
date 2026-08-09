@@ -4,6 +4,7 @@ import path from "path";
 import {initPackage} from "./api/package/init.mjs";
 import {publishPackage} from "./api/package/publish.mjs";
 import {installPackage} from "./api/package/install.mjs";
+import {bumpPackageVersion} from "./api/package/bump.mjs";
 
 let appDir = path.join(os.homedir(), "rider-cli")
 export const currentDir = process.cwd();
@@ -32,6 +33,10 @@ switch (command) {
         break;
     case "gid":
         console.log(await signer.generateGid(await signer.getPublicKey()))
+        break;
+
+    case "bump":
+        await bumpPackageVersion()
         break;
 
 
