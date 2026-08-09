@@ -47,7 +47,6 @@ export async function installPackage(identifier, customPath = null){
             let fileDownloadUrl = `${getPackageUrl(packageObj.name)}/${file}`
 
             let localFilePath = customPath ? customPath : path.join(currentDir, "rider_modules", packageObj.name, file)
-            console.log(localFilePath)
             await checkLocalPackagePath(localFilePath)
             await downloadFile(fileDownloadUrl, localFilePath);
         }
