@@ -22,6 +22,9 @@ switch (command) {
         await publishPackage()
         break;
 
+    case "install":
+        break;
+
     default:
-        console.log("Unbekannter Befehl");
+        console.log(`Unkown command: ${command}`);
 }

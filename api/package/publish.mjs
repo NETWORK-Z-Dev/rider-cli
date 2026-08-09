@@ -50,13 +50,15 @@ export async function publishPackage() {
                 type: "package",
                 name: packageConfig.name,
             },
-            onProgress(percent) {
-                console.log(`${percent}%`);
-            },
             includeDir: true,
         });
 
-        console.log(result);
+
+        let uploaded = result?.ok === true && result?.path
+        if(!uploaded){
+            Logger.error(`Failed to upload file ${fileName}`);
+            Logger.error(result?.error)
+        }
     }
 
     /*
