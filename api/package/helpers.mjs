@@ -20,6 +20,15 @@ export function getPackageConfigObj(){
     return JSON.parse(fs.readFileSync(getPackageConfigPath(), "utf8"));
 }
 
+export function getPackageHost(){
+    return "http://localhost:5000";
+}
+
+export function getPackageUrl(identifier){
+    if(!identifier) throw new Error("Missing identifier");
+    return `${getPackageHost()}/api/package/${identifier}`;
+}
+
 export async function uploadFile(filePath, {
     authObj = {},
     onProgress = null,

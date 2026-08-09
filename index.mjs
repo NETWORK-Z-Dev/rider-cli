@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "path";
 import {initPackage} from "./api/package/init.mjs";
 import {publishPackage} from "./api/package/publish.mjs";
+import {installPackage} from "./api/package/install.mjs";
 
 let appDir = path.join(os.homedir(), "rider-cli")
 export const currentDir = process.cwd();
@@ -23,6 +24,7 @@ switch (command) {
         break;
 
     case "install":
+        await installPackage(args[0])
         break;
 
     default:
