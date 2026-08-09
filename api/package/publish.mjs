@@ -23,7 +23,7 @@ export async function publishPackage() {
     // this will actually filter them
     for (let file of files) {
         let fileName = file.name;
-        let filePath = path.join(file.path, file.name);
+        let filePath = path.join(file?.path ?? file.parentPath, file.name);
 
         // ignore some specific files etc
         if (!ignoreList.some(ignore => filePath.includes(ignore) || fileName.includes(ignore))) {
@@ -37,7 +37,7 @@ export async function publishPackage() {
     Logger.info(`Uploading ${filteredFiles?.length ?? 0} files...`)
     for(let file of filteredFiles) {
         let fileName = file.name;
-        let filePath = path.join(file.path, file.name);
+        let filePath = path.join(file?.path ?? file.parentPath, file.name);
         let isFile = file.isFile();
 
         if(!isFile) continue
