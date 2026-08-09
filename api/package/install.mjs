@@ -44,12 +44,11 @@ export async function installPackage(identifier, customPath = null){
         // for each file we will build the file url as well.
         // this is the way we download them lol
         for(let file of fileListObj){
-            let fileDownloadUrl = `${getPackageUrl(packageObj.name)}`
+            let fileDownloadUrl = `${getPackageUrl(packageObj.name)}/${file}`
 
-            let localFilePath = customPath ? customPath : path.join(currentDir, "rider_modules", packageObj.name, packageObj.version)
+            let localFilePath = customPath ? customPath : path.join(currentDir, "rider_modules", packageObj.name, file)
             console.log(localFilePath)
             await checkLocalPackagePath(localFilePath)
-
             await downloadFile(fileDownloadUrl, localFilePath);
         }
     }
@@ -68,6 +67,7 @@ export async function downloadFile(url, targetPath) {
         throw new Error(`Download failed: ${response.status}`);
     }
 
+    console.log(targetPath)
     const buffer = Buffer.from(await response.arrayBuffer());
     fs.writeFileSync(targetPath, buffer);
 

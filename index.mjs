@@ -1,3 +1,6 @@
+#!/usr/bin/env node
+
+
 import { dSyncSign } from "@hackthedev/dsync-sign";
 import os from "node:os";
 import path from "path";

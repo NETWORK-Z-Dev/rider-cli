@@ -28,7 +28,7 @@ export function setPackageConfigObj(packageObj){
 }
 
 export function getPackageHost(){
-    return "http://localhost:5000";
+    return "https://dist.dcts.community";
 }
 
 export function getPackageUrl(identifier){

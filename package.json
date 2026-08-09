@@ -2,8 +2,11 @@
     "name": "rider-cli",
     "version": "1.0.7",
     "description": "",
-    "type": "commonjs",
+    "type": "module",
     "main": "index.mjs",
+    "bin": {
+        "rider": "./index.mjs"
+    },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
     },

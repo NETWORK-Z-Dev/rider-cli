@@ -43,7 +43,7 @@ export async function publishPackage() {
         if(!isFile) continue
 
         let result = await uploadFile(filePath, {
-            host: "http://localhost:5000",
+            host: getPackageHost(),
             authObj: {
                 "x-session-id": await getSessionId(getPackageHost()),
                 "x-public-key": encodeURIComponent(await signer.getPublicKey()),
