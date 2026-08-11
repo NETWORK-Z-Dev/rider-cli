@@ -28,7 +28,7 @@ switch (command) {
         break;
 
     case "install":
-        await installPackage(args[0])
+        await installPackage(args[0], args[1] ?? null)
         break;
 
     case "key":

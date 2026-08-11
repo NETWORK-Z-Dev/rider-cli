@@ -27,7 +27,7 @@ export async function installPackage(identifier, customPath = null){
         // the reason its not hardcoded is to keep it as dynamic as possible so
         // it could be changed without requiring extra work here as well.
         // at least thats the idea behind it- lets see if it works like that in practise.
-        let fileUrl = `${getPackageHost(identifier)}/${packageObj.meta.paths.files}`;
+        let fileUrl = `${getPackageHost(identifier)}/${packageObj.meta.paths.files}/no-version`;
         if(!fileUrl) return {
             error: `Unable to fetch package files ${identifier}`
         }
@@ -46,10 +46,12 @@ export async function installPackage(identifier, customPath = null){
         for(let file of fileListObj){
             let fileDownloadUrl = `${getPackageUrl(packageObj.name)}/${file}`
 
-            let localFilePath = customPath ? customPath : path.join(currentDir, "rider_modules", packageObj.name, file)
+            let localFilePath = customPath ? path.join(customPath, packageObj.name, file) : path.join(currentDir, "rider_modules", packageObj.name, file)
             await checkLocalPackagePath(localFilePath)
             await downloadFile(fileDownloadUrl, localFilePath);
         }
+
+        Logger.success(`Installed package '${Logger.colors.fgYellow}@${packageObj.account.username}/${identifier}${Logger.colors.fgCyan}'`)
     }
     else{
         Logger.error("Missing package data?")
@@ -66,12 +68,8 @@ export async function downloadFile(url, targetPath) {
         throw new Error(`Download failed: ${response.status}`);
     }
 
-    console.log(targetPath)
     const buffer = Buffer.from(await response.arrayBuffer());
     fs.writeFileSync(targetPath, buffer);
-
-    Logger.info(`Downloaded ${url}`);
-
     return targetPath;
 }
 
