@@ -42,6 +42,7 @@ export async function publishPackage() {
 
         if(!isFile) continue
 
+        Logger.info(Logger.colors.fgGray + `Uploading ${fileName} ...`)
         let result = await uploadFile(filePath, {
             host: getPackageHost(),
             authObj: {

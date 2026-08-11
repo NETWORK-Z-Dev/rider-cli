@@ -46,7 +46,7 @@ export async function installPackage(identifier, customPath = null){
         for(let file of fileListObj){
             let fileDownloadUrl = `${getPackageUrl(packageObj.name)}/${file}`
 
-            let localFilePath = customPath ? path.join(customPath, packageObj.name, file) : path.join(currentDir, "rider_modules", packageObj.name, file)
+            let localFilePath = customPath ? path.join(customPath, packageObj.name, file) : path.join(currentDir, "node_modules", packageObj.name, file)
             await checkLocalPackagePath(localFilePath)
             await downloadFile(fileDownloadUrl, localFilePath);
         }
