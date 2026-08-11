@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "path";
 import {currentDir} from "../../index.mjs";
 import crypto from "node:crypto";
+import Logger from "@hackthedev/terminal-logger";
 
 export function hasPackageConfigFile(){
     if(!fs.existsSync(getPackageConfigPath())){
@@ -72,6 +73,11 @@ export async function uploadFile(filePath, {
             body: buffer
         });
 
+        if(res.status !== 200){
+            Logger.error(res.statusText);
+            continue;
+        }
+
         const json = await res.json();
 
         if (!json.ok) {
@@ -85,6 +91,7 @@ export async function uploadFile(filePath, {
 
         if (json.path) {
             fs.closeSync(file);
+            Logger.success(`Uploaded ${filename}`)
             return json;
         }
     }

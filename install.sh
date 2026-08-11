@@ -4,19 +4,12 @@ set -e
 
 BASE_URL="https://dist.dcts.community/api/package/rider-cli"
 
-command -v node >/dev/null 2>&1 || {
-    echo "Node.js is required"
-    exit 1
-}
+if ! command -v bun >/dev/null 2>&1; then
+    curl -fsSL https://bun.sh/install | bash
+    export BUN_INSTALL="$HOME/.bun"
+    export PATH="$BUN_INSTALL/bin:$PATH"
+fi
 
-curl \
-    --fail \
-    --silent \
-    --show-error \
-    --location \
-    "$BASE_URL/install.mjs" \
-    -o /tmp/rider-install.mjs
-
-node /tmp/rider-install.mjs
-
+curl --fail --silent --show-error --location "$BASE_URL/install.mjs" -o /tmp/rider-install.mjs
+bun /tmp/rider-install.mjs
 rm -f /tmp/rider-install.mjs

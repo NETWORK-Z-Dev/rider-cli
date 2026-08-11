@@ -7,7 +7,7 @@ import { execSync } from "node:child_process";
 const baseUrl = "https://dist.dcts.community/api/package/rider-cli";
 const installDir = path.join(os.homedir(), ".rider-cli");
 
-const filesResponse = await fetch(`${baseUrl}/files`);
+const filesResponse = await fetch(`${baseUrl}/files/no-version`);
 const { files } = await filesResponse.json();
 
 if (!files?.length) {
