@@ -1,6 +1,6 @@
 {
     "name": "rider-cli",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "description": "",
     "type": "module",
     "main": "index.mjs",
@@ -9,7 +9,7 @@
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "bun build index.mjs --target=bun --outfile=rider"
+        "build": "bun build index.mjs --target=bun --outfile=rider.sh"
     },
     "dependencies": {
         "@hackthedev/dsync-sign": "^1.0.15",
