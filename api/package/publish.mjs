@@ -15,9 +15,9 @@ export async function publishPackage() {
     let filteredFiles = [];
     let ignoreList = [
         "node_modules",
-        "rider_modules",
         ".git",
         ".idea",
+        ".vs",
     ]
 
     // this will actually filter them
@@ -48,6 +48,7 @@ export async function publishPackage() {
             authObj: {
                 "x-session-id": await getSessionId(getPackageHost()),
                 "x-public-key": encodeURIComponent(await signer.getPublicKey()),
+                "x-package-description": encodeURIComponent(packageConfig?.description ?? ""),
             },
             params: {
                 type: "package",
