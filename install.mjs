@@ -25,24 +25,22 @@ fs.mkdirSync(installDir, {
 });
 
 for (const file of files) {
-    const relativePath = file.split("/").slice(1).join("/");
-    const targetPath = path.join(installDir, relativePath);
+    const targetPath = path.join(installDir, file);
 
     fs.mkdirSync(path.dirname(targetPath), {
         recursive: true
     });
 
-    const response = await fetch(`${baseUrl}/${relativePath}`);
+    const response = await fetch(`${baseUrl}/${file}`);
 
     if (!response.ok) {
-        throw new Error(`Failed downloading ${relativePath}`);
+        throw new Error(`Failed downloading ${targetPath}`);
     }
 
     const buffer = Buffer.from(await response.arrayBuffer());
 
     fs.writeFileSync(targetPath, buffer);
-
-    console.log(`Downloaded ${relativePath}`);
+    console.log(`Downloaded ${targetPath}`);
 }
 
 execSync("npm install", {
@@ -50,6 +48,7 @@ execSync("npm install", {
     stdio: "inherit"
 });
 
+fs.chmodSync(path.join(installDir, "index.mjs"), 0o755);
 execSync("npm link", {
     cwd: installDir,
     stdio: "inherit"
