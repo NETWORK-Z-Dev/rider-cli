@@ -642,7 +642,7 @@ async function installPackage(identifier, customPath = null) {
   let packageObj = packageInfo?.package;
   if (packageObj?.name) {
     Logger.info(`Installing package '${Logger.colors.fgYellow}@${packageObj.account.username}/${identifier}${Logger.colors.fgCyan}'`);
-    let fileUrl = `${getPackageHost(identifier)}/${packageObj.meta.paths.files}`;
+    let fileUrl = `${getPackageHost(identifier)}/${packageObj.meta.paths.files}/no-version`;
     if (!fileUrl)
       return {
         error: `Unable to fetch package files ${identifier}`
@@ -655,10 +655,11 @@ async function installPackage(identifier, customPath = null) {
       };
     for (let file of fileListObj) {
       let fileDownloadUrl = `${getPackageUrl(packageObj.name)}/${file}`;
-      let localFilePath = customPath ? customPath : path3.join(currentDir, "rider_modules", packageObj.name, file);
+      let localFilePath = customPath ? path3.join(customPath, packageObj.name, file) : path3.join(currentDir, "rider_modules", packageObj.name, file);
       await checkLocalPackagePath(localFilePath);
       await downloadFile(fileDownloadUrl, localFilePath);
     }
+    Logger.success(`Installed package '${Logger.colors.fgYellow}@${packageObj.account.username}/${identifier}${Logger.colors.fgCyan}'`);
   } else {
     Logger.error("Missing package data?");
     return {
@@ -671,10 +672,8 @@ async function downloadFile(url, targetPath) {
   if (!response.ok) {
     throw new Error(`Download failed: ${response.status}`);
   }
-  console.log(targetPath);
   const buffer = Buffer.from(await response.arrayBuffer());
   fs6.writeFileSync(targetPath, buffer);
-  Logger.info(`Downloaded ${url}`);
   return targetPath;
 }
 async function getPackageDetails(identifier) {
@@ -759,7 +758,7 @@ switch (command) {
     await publishPackage();
     break;
   case "install":
-    await installPackage(args[0]);
+    await installPackage(args[0], args[1] ?? null);
     break;
   case "key":
     console.log(await signer.getPublicKey());
