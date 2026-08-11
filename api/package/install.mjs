@@ -65,7 +65,7 @@ export async function downloadFile(url, targetPath) {
     const response = await fetch(url);
 
     if (!response.ok) {
-        throw new Error(`Download failed: ${response.status}`);
+        throw new Error(`Download failed: ${response.status} - ${response.statusText} » ${url}`);
     }
 
     const buffer = Buffer.from(await response.arrayBuffer());
