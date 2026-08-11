@@ -73,11 +73,6 @@ export async function uploadFile(filePath, {
             body: buffer
         });
 
-        if(res.status !== 200){
-            Logger.error(res.statusText);
-            continue;
-        }
-
         const json = await res.json();
 
         if (!json.ok) {
