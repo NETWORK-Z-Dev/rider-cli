@@ -43,14 +43,8 @@ for (const file of files) {
     console.log(`Downloaded ${targetPath}`);
 }
 
-execSync("npm install", {
-    cwd: installDir,
-    stdio: "inherit"
-});
-
-fs.chmodSync(path.join(installDir, "index.mjs"), 0o755);
-execSync("npm link", {
-    cwd: installDir,
+fs.chmodSync(path.join(installDir, "rider.sh"), 0o755);
+execSync(`ln -sf "${path.join(installDir, "rider.sh")}" /usr/local/bin/rider`, {
     stdio: "inherit"
 });
 
