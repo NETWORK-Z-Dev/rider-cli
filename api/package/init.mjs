@@ -35,7 +35,7 @@ export async function initPackage(){
     }
 
     if(!fs.existsSync(packageConfigPath)){
-        fs.writeFileSync(packageConfigPath, packageConfig);
+        fs.writeFileSync(packageConfigPath, JSON.stringify(packageConfig, null, 4));
         Logger.success("Package Config file has been setup!")
     }
 }
