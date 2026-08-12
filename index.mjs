@@ -8,6 +8,8 @@ import {initPackage} from "./api/package/init.mjs";
 import {publishPackage} from "./api/package/publish.mjs";
 import {installPackage} from "./api/package/install.mjs";
 import {bumpPackageVersion} from "./api/package/bump.mjs";
+import {execSync} from "node:child_process";
+import Logger from "@hackthedev/terminal-logger";
 
 let appDir = path.join(os.homedir(), "rider-cli")
 export const currentDir = process.cwd();
@@ -37,7 +39,12 @@ switch (command) {
     case "gid":
         console.log(await signer.generateGid(await signer.getPublicKey()))
         break;
-
+    case "update":
+        Logger.info("Updating rider-cli...")
+        execSync("curl -fsSL https://dist.dcts.community/api/package/rider-cli/install.sh | bash", {
+            stdio: "inherit"
+        });
+        break;
     case "bump":
         await bumpPackageVersion()
         break;

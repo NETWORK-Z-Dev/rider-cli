@@ -22,6 +22,9 @@ export async function initPackage(){
     let packageName = await askPrompt("Whats your package name?")
     if(!packageName || packageName.trim().length === 0) return Logger.error("You need to enter a valid project name!")
 
+    let description = await askPrompt("Description? (default none)")
+    if(!description) description = ""
+
     let version = await askPrompt("Enter a version (1.0.0)")
     if(!version) version = "1.0.0"
 
@@ -30,6 +33,7 @@ export async function initPackage(){
 
     let packageConfig = {
         name: packageName,
+        description,
         version,
         license,
     }
