@@ -29,3 +29,7 @@ Will print your public key used for authentification
 ### rider gid
 
 Used to print your public key's fingerprint
+
+### rider install <package>
+
+supports package formats like `packageName@version`, `packageName`, `@user/packageName` and `@user/PackageName@version`. If a `rider.json` file exists in the working directory, rider will automatically install all packages listed in that file with the given version.

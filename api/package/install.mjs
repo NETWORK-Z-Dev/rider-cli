@@ -5,60 +5,116 @@ import path from "path";
 import fs from "node:fs";
 
 export async function installPackage(identifier, customPath = null){
-    if(!identifier) throw new Error("Missing package identifier");
+    let localPackageConfigFilePath = path.join(currentDir, "rider.json");
+    let localPackageConfigExists = fs.existsSync(localPackageConfigFilePath);
 
-    // get general package info n shit
-    let packageInfo = await getPackageDetails(identifier);
-    if(packageInfo?.error){
-        Logger.error(`Unable to install package: ${identifier} - Unable to fetch details`);
-        Logger.error(packageInfo.error);
+    // no config file or identifier
+    if(!identifier && !localPackageConfigExists) throw new Error("Missing package identifier");
 
-        return {
-            error: `Unable to install package ${identifier} - Unable to fetch details`
+    // get version from @scope/package@version etc and other variants
+    let splitPackageArr = identifier?.split("/")[1]?.split("@") ?? [];
+    let packageVersion = splitPackageArr[1] ?? null;
+
+    // if no identifier but local config path
+    if(!identifier && localPackageConfigExists){
+        let localPackageConfigObj = JSON.parse(fs.readFileSync(localPackageConfigFilePath, "utf8"));
+
+        if(Object.keys(localPackageConfigObj?.packages)?.length > 0){
+            for(let key in localPackageConfigObj?.packages){
+                let configPackageIdentifier = key;
+                let configPackageVersion = localPackageConfigObj?.packages[key];
+
+                // install package
+                await actuallyInstallPackage(configPackageIdentifier, configPackageVersion)
+            }
         }
-    }
-
-    // check if the got "valid data"
-    let packageObj = packageInfo?.package;
-    if(packageObj?.name){
-        Logger.info(`Installing package '${Logger.colors.fgYellow}@${packageObj.account.username}/${identifier}${Logger.colors.fgCyan}'`)
-
-        // build the api url to get the files from the package.
-        // the reason its not hardcoded is to keep it as dynamic as possible so
-        // it could be changed without requiring extra work here as well.
-        // at least thats the idea behind it- lets see if it works like that in practise.
-        let fileUrl = `${getPackageHost(identifier)}/${packageObj.meta.paths.files}/no-version`;
-        if(!fileUrl) return {
-            error: `Unable to fetch package files ${identifier}`
+        else{
+            Logger.error("No packages found in local package config")
         }
-
-        // fetch the package files
-        let fileInfo = await getPackageFiles(fileUrl)
-        let fileListObj = fileInfo?.files;
-
-        // and check if we got any files
-        if(fileListObj.length === 0) return {
-            error: `No files found for ${identifier}`,
-        }
-
-        // for each file we will build the file url as well.
-        // this is the way we download them lol
-        for(let file of fileListObj){
-            let fileDownloadUrl = `${getPackageUrl(packageObj.name)}/${file}`
-
-            let localFilePath = customPath ? path.join(customPath, packageObj.name, file) : path.join(currentDir, "node_modules", packageObj.name, file)
-            await checkLocalPackagePath(localFilePath)
-            await downloadFile(fileDownloadUrl, localFilePath);
-        }
-
-        Logger.success(`Installed package '${Logger.colors.fgYellow}@${packageObj.account.username}/${identifier}${Logger.colors.fgCyan}'`)
     }
     else{
-        Logger.error("Missing package data?")
-        return {
-            error: "Missing package data?"
+        await actuallyInstallPackage(identifier, packageVersion)
+    }
+
+
+    async function actuallyInstallPackage(actualIdentifier, actualVersion = null){
+        // get general package info n shit
+        let fullPackageName = `${Logger.colors.fgYellow}${actualIdentifier}${actualVersion ? `@${actualVersion}` : ""}${Logger.colors.fgCyan}`;
+
+        let packageInfo = await getPackageDetails(actualIdentifier, actualVersion);
+        if(packageInfo?.error){
+            Logger.error(`Unable to install package: ${fullPackageName} - Unable to fetch details`);
+            Logger.error(packageInfo.error);
+
+            return {
+                error: `Unable to install package ${fullPackageName} - Unable to fetch details`
+            }
+        }
+
+        // check if the got "valid data"
+        let packageObj = packageInfo?.package;
+        if(packageObj?.name){
+            Logger.info(`Installing package '${fullPackageName}'`)
+
+            // build the api url to get the files from the package.
+            // the reason its not hardcoded is to keep it as dynamic as possible so
+            // it could be changed without requiring extra work here as well.
+            // at least thats the idea behind it- lets see if it works like that in practise.
+            let fileUrl = `${getPackageHost(actualIdentifier)}/${packageObj.meta.paths.files}/no-version`;
+            if(!fileUrl) return {
+                error: `Unable to fetch package files ${fullPackageName}`
+            }
+
+            // fetch the package files
+            let fileInfo = await getPackageFiles(fileUrl)
+            let fileListObj = fileInfo?.files;
+
+            // and check if we got any files
+            if(fileListObj.length === 0) return {
+                error: `No files found for ${fullPackageName}`,
+            }
+
+            // for each file we will build the file url as well.
+            // this is the way we download them lol
+            for(let file of fileListObj){
+                let fileDownloadUrl = `${getPackageUrl(packageObj.name)}/${file}`
+                let localFilePath = customPath ? path.join(customPath, packageObj.name, file) : path.join(currentDir, "node_modules", packageObj.name, file)
+
+                await checkLocalPackagePath(localFilePath);
+                await registerPackageInLocalConfig(packageObj.name, packageObj.version);
+                await downloadFile(fileDownloadUrl, localFilePath);
+            }
+
+            Logger.success(`Installed package '${fullPackageName}'`)
+        }
+        else{
+            Logger.error("Missing package data?")
+            return {
+                error: "Missing package data?"
+            }
         }
     }
+}
+
+export async function registerPackageInLocalConfig(packageName, version){
+    if(!packageName) throw new Error("Missing package name for local registry");
+    if(!version) throw new Error("Missing package version for local registry");
+
+    // just some shit
+    let localPackageConfigFilePath = path.join(currentDir, "rider.json");
+    let localPackageConfigObj = {};
+
+    // exists? parse it.
+    if(fs.existsSync(localPackageConfigFilePath)) localPackageConfigObj = JSON.parse(fs.readFileSync(localPackageConfigFilePath, "utf8"));
+
+    // this is important because if .package[packageName] doesnt exist
+    // it will shit its fucking pants. trust me.
+    localPackageConfigObj.packages ??= {};
+    // set the fucking value
+    localPackageConfigObj.packages[packageName] ??= version
+
+    // and then write it.
+    fs.writeFileSync(localPackageConfigFilePath, JSON.stringify(localPackageConfigObj, null, 4));
 }
 
 export async function downloadFile(url, targetPath) {
@@ -73,10 +129,10 @@ export async function downloadFile(url, targetPath) {
     return targetPath;
 }
 
-export async function getPackageDetails(identifier){
+export async function getPackageDetails(identifier, version = null){
     if(!identifier) throw new Error("Missing package identifier");
 
-    let infoRes = await fetch(getPackageUrl(identifier), {
+    let infoRes = await fetch(getPackageUrl(identifier, version), {
         signal: AbortSignal.timeout(2500)
     })
 

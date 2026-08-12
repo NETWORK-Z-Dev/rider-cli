@@ -32,9 +32,9 @@ export function getPackageHost(){
     return "https://dist.dcts.community";
 }
 
-export function getPackageUrl(identifier){
+export function getPackageUrl(identifier, version = null){
     if(!identifier) throw new Error("Missing identifier");
-    return `${getPackageHost()}/api/package/${identifier}`;
+    return `${getPackageHost()}/api/package/${identifier}${version ? `/${version}` : ""}`;
 }
 
 export async function uploadFile(filePath, {
