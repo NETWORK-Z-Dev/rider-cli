@@ -8,6 +8,49 @@ curl -fsSL https://dist.dcts.community/api/package/rider-cli/install.sh | bash
 
 ------
 
+## NodeJS / Bun Integration in 3 Steps!
+
+### Step 1
+
+If you want to use rider to install backend libraries you will need to use a post-install script that looks like this:
+
+```js
+// https://dist.dcts.community/api/package/rider-cli/postinstall.mjs
+import { execSync } from "node:child_process";
+
+try {
+    execSync("rider gid", {
+        stdio: "ignore"
+    });
+} catch {
+    execSync("curl -fsSL https://dist.dcts.community/api/package/rider-cli/install.sh | bash", {
+        stdio: "inherit",
+        shell: true
+    });
+}
+
+execSync("rider install", {
+    stdio: "inherit"
+});
+```
+
+### Step 2
+
+In order for this script to be executed after the NodeJS / Bun install command, you will need to edit your `package.json` file to "register" the post-install file. In this example, we will assume its in the project's root folder.
+
+```json
+ "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "bun postinstall.mjs", // « you need to add this
+  },
+```
+
+### Step 3
+
+Only once now you will need to manually install the needed packages via rider with `rider install <package>`. On successful execution it will generate a `rider.json` file, similar to npm's `package.json` file. The `rider.json` file will keep a list of all (rider) packages. Once `rider install` is executed in the same working directory it will automatically install all these packages from the json file. Done!
+
+---
+
 ## Commands
 
 ### rider init
