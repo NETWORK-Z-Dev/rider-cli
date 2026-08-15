@@ -3,6 +3,22 @@ import Logger from "@hackthedev/terminal-logger";
 import {currentDir} from "../../index.mjs";
 import path from "path";
 import fs from "node:fs";
+import {execSync} from "node:child_process";
+
+export function installFromNpm(identifier, version = null){
+    let packageIdentifier = `${identifier}${version ? `@${version}` : ""}`;
+
+    try{
+        execSync(`npm install "${packageIdentifier}"`, {
+            stdio: "inherit"
+        });
+
+        return true;
+    }
+    catch{
+        return false;
+    }
+}
 
 export async function installPackage(identifier, customPath = null){
     let localPackageConfigFilePath = path.join(currentDir, "rider.json");
@@ -46,11 +62,20 @@ export async function installPackage(identifier, customPath = null){
 
         let packageInfo = await getPackageDetails(actualIdentifier, actualVersion);
         if(packageInfo?.error){
-            Logger.error(`Unable to install package: ${fullPackageName} - Unable to fetch details`);
-            Logger.error(packageInfo.error);
+            // if the package wasnt found
+            if(packageInfo.response.status === 404){
+                // we will try to fallback to npm if possible
+                let npmResult = installFromNpm(actualIdentifier, actualVersion);
 
-            return {
-                error: `Unable to install package ${fullPackageName} - Unable to fetch details`
+                // and if that fails then we're shit out of luck
+                if(npmResult !== true){
+                    Logger.error(`Unable to install package: ${fullPackageName} - Unable to fetch details`);
+                    Logger.error(packageInfo.error);
+
+                    return {
+                        error: `Unable to install package ${fullPackageName} - Unable to fetch details`
+                    }
+                }
             }
         }
 
