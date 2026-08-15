@@ -15,6 +15,9 @@ export async function installPackage(identifier, customPath = null){
     let splitPackageArr = identifier?.split("/")[1]?.split("@") ?? [];
     let packageVersion = splitPackageArr[1] ?? null;
 
+    // some trickery
+    if(packageVersion === "latest") packageVersion = null;
+
     // if no identifier but local config path
     if(!identifier && localPackageConfigExists){
         let localPackageConfigObj = JSON.parse(fs.readFileSync(localPackageConfigFilePath, "utf8"));
