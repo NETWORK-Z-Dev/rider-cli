@@ -4,12 +4,13 @@ import {currentDir} from "../../index.mjs";
 import path from "path";
 import fs from "node:fs";
 import {execSync} from "node:child_process";
+import {version} from "../../../../dcts-shipping/docs/.vitepress/cache/deps/vue.js";
 
-export function installFromNpm(identifier, version = null){
+export function installFromBun(identifier, version = null){
     let packageIdentifier = `${identifier}${version ? `@${version}` : ""}`;
 
     try{
-        execSync(`npm install "${packageIdentifier}"`, {
+        execSync(`bun install "${packageIdentifier}" --ignore-scripts`, {
             stdio: "inherit"
         });
 
@@ -65,15 +66,16 @@ export async function installPackage(identifier, customPath = null){
             // if the package wasnt found
             if(packageInfo.response.status === 404){
                 // we will try to fallback to npm if possible
-                let npmResult = installFromNpm(actualIdentifier, actualVersion);
+                let bunResult = installFromBun(actualIdentifier, actualVersion);
 
                 // and if that fails then we're shit out of luck
-                if(npmResult !== true){
+                if(bunResult !== true){
                     Logger.error(`Unable to install package: ${fullPackageName} - Unable to fetch details`);
                     Logger.error(packageInfo.error);
 
                     return {
-                        error: `Unable to install package ${fullPackageName} - Unable to fetch details`
+                        error: `Unable to install package ${fullPackageName} - Unable to fetch details`,
+                        response: packageInfo.response,
                     }
                 }
             }
@@ -82,6 +84,22 @@ export async function installPackage(identifier, customPath = null){
         // check if the got "valid data"
         let packageObj = packageInfo?.package;
         if(packageObj?.name){
+
+            // main install path of the package
+            let packageRootFolder = path.join(currentDir, "node_modules", packageObj.name);
+            let installedPackageVersionFile = path.join(currentDir, "node_modules", packageObj.name, "version.info");
+
+            // check if the package is already installed and if its the same version
+            if(fs.existsSync(installedPackageVersionFile)){
+                let locallyInstalledVersion = fs.readFileSync(installedPackageVersionFile, "utf8");
+                if(locallyInstalledVersion == actualVersion) {
+                    Logger.info(`Skipping ${fullPackageName} because its already installed`)
+                    return {
+                        error: null
+                    }
+                }
+            }
+
             Logger.info(`Installing package '${fullPackageName}'`)
 
             // build the api url to get the files from the package.
@@ -106,11 +124,16 @@ export async function installPackage(identifier, customPath = null){
             // this is the way we download them lol
             for(let file of fileListObj){
                 let fileDownloadUrl = `${getPackageUrl(packageObj.name)}/${file}`
-                let localFilePath = customPath ? path.join(customPath, packageObj.name, file) : path.join(currentDir, "node_modules", packageObj.name, file)
+                let localFilePath = customPath ? path.join(customPath, packageObj.name, file) : path.join(packageRootFolder, file)
 
                 await checkLocalPackagePath(localFilePath);
                 await registerPackageInLocalConfig(packageObj.name, packageObj.version);
                 await downloadFile(fileDownloadUrl, localFilePath);
+            }
+
+            // create a version file if it doesnt exist yet
+            if(!fs.existsSync(path.join(packageRootFolder, "version.info"))) {
+                fs.writeFileSync(path.join(packageRootFolder, "version.info"), actualVersion)
             }
 
             Logger.success(`Installed package '${fullPackageName}'`)
