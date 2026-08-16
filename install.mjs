@@ -47,6 +47,10 @@ try {
     fs.unlinkSync(riderLink);
 } catch {}
 
+try {
+    fs.unlinkSync(riderLink);
+} catch {}
+
 fs.symlinkSync(targetPath, riderLink);
 
 console.log("Rider CLI installed");
