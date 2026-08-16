@@ -9,7 +9,7 @@
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "bun build index.mjs --compile --outfile rider.sh && sudo ln -sf \"$(pwd)/rider.sh\" /usr/local/bin/rider"
+        "build": "bun build index.mjs --compile --target=bun-linux-x64 --outfile rider-linux-x64 && bun build index.mjs --compile --target=bun-linux-arm64 --outfile rider-linux-arm64"
     },
     "dependencies": {
         "@hackthedev/dsync-sign": "^1.0.15",
