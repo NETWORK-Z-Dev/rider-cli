@@ -1,17 +1,19 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { execSync } from "node:child_process";
 
 // i should turn this into a setting at some point so people can change hosts
 const baseUrl = "https://dist.dcts.community/api/package/rider-cli";
 const installDir = path.join(os.homedir(), ".rider-cli");
 
-const filesResponse = await fetch(`${baseUrl}/files/no-version`);
-const { files } = await filesResponse.json();
+let binary;
 
-if (!files?.length) {
-    throw new Error("No Rider CLI files found");
+if (os.arch() === "x64") {
+    binary = "rider-linux-x64";
+} else if (os.arch() === "arm64") {
+    binary = "rider-linux-arm64";
+} else {
+    throw new Error(`Unsupported architecture: ${os.arch()}`);
 }
 
 // cleanup old shit if present
@@ -24,28 +26,27 @@ fs.mkdirSync(installDir, {
     recursive: true
 });
 
-for (const file of files) {
-    const targetPath = path.join(installDir, file);
+// download some shit
+const targetPath = path.join(installDir, binary);
+const response = await fetch(`${baseUrl}/${binary}`);
 
-    fs.mkdirSync(path.dirname(targetPath), {
-        recursive: true
-    });
-
-    const response = await fetch(`${baseUrl}/${file}`);
-
-    if (!response.ok) {
-        throw new Error(`Failed downloading ${targetPath}`);
-    }
-
-    const buffer = Buffer.from(await response.arrayBuffer());
-
-    fs.writeFileSync(targetPath, buffer);
-    console.log(`Downloaded ${targetPath}`);
+if (!response.ok) {
+    throw new Error(`Failed downloading ${binary}`);
 }
 
-fs.chmodSync(path.join(installDir, "rider.sh"), 0o755);
-execSync(`ln -sf "${path.join(installDir, "rider.sh")}" /usr/local/bin/rider`, {
-    stdio: "inherit"
-});
+const buffer = Buffer.from(await response.arrayBuffer());
+fs.writeFileSync(targetPath, buffer);
+fs.chmodSync(targetPath, 0o755);
+
+// create sym link so its nicer to use n shit, well prepair it actually
+const bunDir = path.dirname(process.execPath);
+const riderLink = path.join(bunDir, "rider");
+
+// and create the sym link here actually
+try {
+    fs.unlinkSync(riderLink);
+} catch {}
+
+fs.symlinkSync(targetPath, riderLink);
 
 console.log("Rider CLI installed");
