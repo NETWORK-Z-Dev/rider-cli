@@ -33,3 +33,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Finder (MacOS) folder config
 .DS_Store
 rider_modules/
+rider-linux-arm64
+rider-linux-x64
+rider-linux-arm64

@@ -95,7 +95,7 @@ export async function installPackage(identifier, customPath = null){
             // check if the package is already installed and if its the same version
             if(fs.existsSync(installedPackageVersionFile)){
                 let locallyInstalledVersion = fs.readFileSync(installedPackageVersionFile, "utf8");
-                if(locallyInstalledVersion == actualVersion) {
+                if(locallyInstalledVersion == packageObj.version) {
                     Logger.info(`Skipping ${fullPackageName} because its already installed`)
                     return {
                         error: null
@@ -136,7 +136,7 @@ export async function installPackage(identifier, customPath = null){
 
             // create a version file if it doesnt exist yet
             if(!fs.existsSync(path.join(packageRootFolder, "version.info"))) {
-                fs.writeFileSync(path.join(packageRootFolder, "version.info"), actualVersion)
+                fs.writeFileSync(path.join(packageRootFolder, "version.info"), packageObj.version)
             }
 
             Logger.success(`Installed package '${fullPackageName}'`)
