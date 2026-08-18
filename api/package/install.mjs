@@ -4,7 +4,6 @@ import {currentDir} from "../../index.mjs";
 import path from "path";
 import fs from "node:fs";
 import {execSync} from "node:child_process";
-import {version} from "../../../../dcts-shipping/docs/.vitepress/cache/deps/vue.js";
 
 export function installFromBun(identifier, version = null){
     let packageIdentifier = `${identifier}${version ? `@${version}` : ""}`;
@@ -31,6 +30,10 @@ export async function installPackage(identifier, customPath = null){
     // get version from @scope/package@version etc and other variants
     let splitPackageArr = identifier?.split("/")[1]?.split("@") ?? [];
     let packageVersion = splitPackageArr[1] ?? null;
+
+    if(packageVersion){
+        identifier = identifier.slice(0, identifier.lastIndexOf("@"));
+    }
 
     // some trickery
     if(packageVersion === "latest") packageVersion = null;
