@@ -9,7 +9,7 @@ export function installFromBun(identifier, version = null){
     let packageIdentifier = `${identifier}${version ? `@${version}` : ""}`;
 
     try{
-        execSync(`bun install "${packageIdentifier}" --ignore-scripts`, {
+        execSync(`bun install "${packageIdentifier}" --ignore-scripts --no-save`, {
             stdio: "inherit"
         });
 

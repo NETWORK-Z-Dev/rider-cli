@@ -40,17 +40,45 @@ fs.chmodSync(targetPath, 0o755);
 
 // create sym link so its nicer to use n shit, well prepair it actually
 const bunDir = path.dirname(process.execPath);
-const riderLink = path.join(bunDir, "rider");
+let riderLink;
 
-// and create the sym link here actually
-try {
-    fs.unlinkSync(riderLink);
-} catch {}
+// only relevant for linux. this shit is annoying me so much
+if(process.platform === "linux"){
+    const binDir = path.join(os.homedir(), ".local", "bin");
+    riderLink = path.join(binDir, "rider");
 
+    fs.mkdirSync(binDir, {
+        recursive: true
+    });
+
+    const shell = process.env.SHELL || "";
+    const shellConfig = shell.includes("zsh")
+        ? path.join(os.homedir(), ".zshrc")
+        : path.join(os.homedir(), ".bashrc");
+
+    const pathLine = `export PATH="$HOME/.local/bin:$PATH"`;
+
+    let shellConfigContent = fs.existsSync(shellConfig)
+        ? fs.readFileSync(shellConfig, "utf8")
+        : "";
+
+    if(!shellConfigContent.includes(pathLine)){
+        fs.appendFileSync(shellConfig, `\n${pathLine}\n`);
+    }
+
+    process.env.PATH = `${binDir}:${process.env.PATH}`;
+}
+else{
+    riderLink = path.join(bunDir, "rider");
+}
+
+// preay
 try {
     fs.unlinkSync(riderLink);
 } catch {}
 
 fs.symlinkSync(targetPath, riderLink);
+
+
 
 console.log("Rider CLI installed");
