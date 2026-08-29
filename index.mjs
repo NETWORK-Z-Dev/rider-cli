@@ -48,7 +48,9 @@ switch (command) {
     case "bump":
         await bumpPackageVersion()
         break;
-
+    case "hello":
+        Logger.success("Rider is available!")
+        break;
 
     default:
         console.log(`Unkown command: ${command}`);
