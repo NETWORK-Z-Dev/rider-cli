@@ -1,6 +1,6 @@
 {
     "name": "rider-cli",
-    "version": "1.3.3",
+    "version": "1.3.4",
     "description": "Rider Command Line Tool",
     "type": "module",
     "main": "index.mjs",
@@ -9,7 +9,7 @@
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "bun build index.mjs --compile --target=bun-linux-x64 --outfile rider-linux-x64 && bun build index.mjs --compile --target=bun-linux-arm64 --outfile rider-linux-arm64"
+        "build": "bun build index.mjs --compile --target=bun-linux-x64-baseline --outfile rider-linux-x64 && bun build index.mjs --compile --target=bun-linux-arm64 --outfile rider-linux-arm64"
     },
     "dependencies": {
         "@hackthedev/dsync-sign": "^1.0.15",
