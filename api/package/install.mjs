@@ -81,6 +81,14 @@ export async function installPackage(identifier, customPath = null){
                         response: packageInfo.response,
                     }
                 }
+                else{
+                    return {
+                        error: null,
+                        response: {
+                            status: 200,
+                        },
+                    }
+                }
             }
         }
 
